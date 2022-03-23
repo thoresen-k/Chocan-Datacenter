@@ -1,4 +1,4 @@
-# Choocan-Datacenter
+# Chocan-Datacenter
 A Java program to manage data for the fictional company Chocan. This includes the services they provide, their costs, and member/physician information. Information is stored/organized in a MySQL database and accessed through Java.
 
 ## encryption
