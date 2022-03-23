@@ -1,44 +1,57 @@
-package main;
+package main;/*
+    TEST
+*/
 
+import com.google.api.services.sqladmin.model.User;
+import encryption.Hash_Function;
 import interfaces.*;
 import service_records.*;
 import sql.*;
 
+import javax.crypto.Cipher;
+import javax.swing.*;
+
+import java.util.Scanner;
+
+import static javafx.application.Platform.exit;
+
 public class Main {
+    // Data Members
+    public static User_Interfaces UI = new User_Interfaces();
+    static Scanner scanner = new Scanner(System.in);
+    public static char choice = '\0';
+    public static int account_type = 0;
 
     public static void main(String[] args) {
-        // Declaring Service Object
-        //Service serviceobj = new Service();
 
-        // Declaring service_records.Member Object
-        Member memberobj = new Member();
+        // [PROGRAM START]
+        // Initiate Login Interface
+        account_type = UI.LaunchLoginInterface();
+        while(choice != 'y' && choice != 'Y'){
 
-        //Declaring interfaces.Provider Object
-        Provider providerobj = new Provider();
+            // Launch Provider Interface
+            if(account_type == 1)
+                UI.LaunchManagerInterface();
 
-        // Declaring sql_api.SQL_API object
-        SQL_API API = new SQL_API();
+            // Launch Manager Interface
+            else if(account_type == 2)
+                UI.LaunchProviderInterface();
 
-        //serviceobj.initService(123, 123, "bug", 123);
+            // Launch Acme Interface
+            else if(account_type == 3)
+                UI.LaunchAcmeInterface();
 
-        //API.AddService(serviceobj);
-        //API.DisplayAllProviders();
-        //String str = "123456789";
-        //API.DisplayMember(3);
-        //int x = 3;
-        //String temp = API.ValidateMember(12345);
-        //System.out.println(temp);
-        //API.DisplayAllServiceProvided(str);
+            // Launch Admin Interface
+            else if(account_type == 4)
+                UI.LaunchAdminInterface();
 
-        Manager manager = new Manager();
-        //manager.update_member(6);
-        //API.DisplayAllProviders();
-        //manager.delete_member(3);
-        //API.DisplayAllMembers();
-        //manager.update_member("666666666");
-        //API.DisplayAllMembers();
-        //API.DisplayAServiceProvided("777777777");
-        String date = manager.member_report("777777777");
-        manager.view_report("777777777",date);
+            System.out.print("Quit? [Y/N]\n" +
+                             "> ");
+            choice = scanner.next().charAt(0);
+        }
+
+        // [PROGRAM END]
+        System.out.print("Shutting down program...\n");
+        exit();
     }
 }

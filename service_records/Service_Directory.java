@@ -6,15 +6,19 @@ public class Service_Directory extends Service_Provided
     private String service_name;
     private float fee;
 
-    public Service_Directory()
-    {
+    public Service_Directory() {
         this.service_id = super.getService_ID();
         this.service_name = super.getServiceName();
         this.fee = 0;
     }
 
-    public void initService_Directory(int service_id, String service_name, float fee)
-    {
+    public Service_Directory(int id, String name, int price) {
+        this.service_id = id;
+        this.service_name = name;
+        this.fee = price;
+    }
+
+    public void initService_Directory(int service_id, String service_name, float fee) {
         this.service_id = service_id;
         this.service_name = service_name;
         this.fee = fee;

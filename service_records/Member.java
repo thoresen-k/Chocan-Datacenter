@@ -3,7 +3,7 @@ package service_records;
 import interfaces.Status;
 
 public class Member {
-    private int member_ID = 0;
+    private String member_ID = new String();
     private String last_name = new String();
     private String first_name = new String();
     private String address = new String();
@@ -13,10 +13,53 @@ public class Member {
     private int zip = 0;
     private Status status;
 
-    public Member() {
+    public Member(String id, String last_name, String first_name, String address, String apt, String city, String state, int zip, Status status){
+        this.member_ID = id;
+        this.last_name = last_name;
+        this.first_name = first_name;
+        this.address = address;
+        this.apt_number = apt;
+        this.city = city;
+        this.state = state;
+        this.zip = zip;
+
+        if(status == null)
+        {
+            this.status = new Status();
+            String name = this.first_name +" "+this.last_name;
+            this.status.initStatus(name,"VALIDATED");
+        }
+
+        this.status = new Status(status.getName(), status.getMembership_status());
+
     }
 
-    public int initMember(int member_ID, String last_name, String first_name, String address,
+    //copy constructor
+    public Member(Member to_add)
+    {
+        this.member_ID = to_add.member_ID;
+        this.last_name = to_add.last_name;
+        this.first_name = to_add.first_name;
+        this.address = to_add.address;
+        this.apt_number = to_add.apt_number;
+        this.city = to_add.city;
+        this.state = to_add.state;
+        this.zip = to_add.zip;
+
+        if(to_add.status == null)
+        {
+            this.status = new Status();
+            String name = this.first_name +" "+this.last_name;
+            this.status.initStatus(name,"VALIDATED");
+        }
+
+    }
+
+    public Member() {
+
+    }
+
+    public int initMember(String member_ID, String last_name, String first_name, String address,
                           String apt_number, String city, String state, int zip, String membership_status)
     {
         this.member_ID = member_ID;
@@ -35,8 +78,9 @@ public class Member {
 
         return 1;
     }
-    public int getMemberID() {
-        return this.member_ID;
+
+    public String getMemberID() {
+        return this.member_ID ;
     }
 
     public String getLastName() {
@@ -51,9 +95,7 @@ public class Member {
         return this.address;
     }
 
-    public String getAptNumber() {
-        return this.apt_number;
-    }
+    public String getAptNumber() { return this.apt_number; }
 
     public String getCity() {
         return this.city;

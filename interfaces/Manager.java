@@ -1,24 +1,17 @@
 package interfaces;
 import sql.SQL_API;
 import service_records.Member;
-import service_records.Service_Provided;
 
-import java.util.*;
-import java.io.*;
-
-//timer libraries
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
-
-/*
-    The manager class will manage administrative access to the database.
-    The functionalities offered to managers are
-    1) Deleting existing member accounts
-    2) Adding new member accounts
-    3) Requesting weekly reports to be generate
-    4) Run reports ??????? <-- TODO need to get this clarified
- */
+import java.util.Random;
+import java.util.Scanner;
 
 public class Manager
 {
@@ -30,8 +23,9 @@ public class Manager
     }
 
     //functions to implement
-    public void delete_member(int member_id){
-        this.sql_api.RemoveMember(member_id);
+    public void delete_member(String member_id){
+         int temp = Integer.parseInt(member_id);
+         this.sql_api.RemoveMember(temp);
     }
 
     public void add_member(Member to_add){
@@ -54,7 +48,7 @@ public class Manager
             System.out.println("New last name: " + last_name);
 
             String street = update_street(member_id);
-            System.out.println("New street: " + street);
+            System.out.println("New state: " + street);
 
             String apt = update_APT(member_id);
             System.out.println("New apartment number: " + apt);
@@ -71,15 +65,10 @@ public class Manager
             String status = update_status(member_id);
             System.out.println("New status: " + status);
 
-            //update member record
             this.sql_api.updateMember(member_id,id,first_name,last_name,street,apt,state,city,zip,status);
-            //this.sql_api.DisplayAllMembers();
-
-            //update provided_services record
-            String member = first_name+" "+last_name;
-            this.sql_api.updateServiceProvided(member_id,id,member);
         }
     }
+
 
     // helper functions for update_member
     private boolean user_input()
@@ -245,14 +234,39 @@ public class Manager
                 }
             }
         }
+
         return temp;
     }
 
-    public String member_report(String member_id)
+    public String getTime(){
+        Date date = new Date();
+        LocalDate localDate = LocalDate.from(date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+        LocalDateTime time = LocalDateTime.now(ZoneId.systemDefault());
+        int year  = localDate.getYear();
+        int month = localDate.getMonthValue();
+        int day   = localDate.getDayOfMonth();
+
+
+        int hr = time.getHour();
+        int minute = time.getMinute();
+        int second = time.getSecond();
+
+        String recorded_time = month + "-" + day + "-" + year + " " + hr + ":" + minute + ":" + second ;
+
+
+        return recorded_time;
+    }
+
+
+
+
+    public String member_report()
     {
         //get the current date
-        String date = getDate();
-        //System.out.println("Date of report: " + date);
+        String date = getTime();
+        System.out.println("What is the member_ID for this member's weekly services?:");
+        Scanner a_scan = new Scanner(System.in);
+        String member_id = a_scan.nextLine();
 
         //create the name of the file
         String file_name = this.sql_api.getFName(member_id) + this.sql_api.getLName(member_id) + date + ".txt";
@@ -288,8 +302,7 @@ public class Manager
 
             //save the member name for future reference
             String member_name = this.sql_api.getMemberName(member_id);
-            System.out.println(member_name);
-
+            
             //insert the member id passed in into the file
             System.out.print("Inserting into File: " + member_id+"\n");
             fileWriter.write(member_id+"\n");
@@ -317,7 +330,7 @@ public class Manager
             //read in provided service info into arrays
             items = this.sql_api.getServiceInfo(member_id,member_name,dateofservice,providername,servicename,sorted_date);
             System.out.println(items);
-            //sort the services provided by date of service by attaching the provider name & service name to the correct date
+            //sort the services provided by date of service by matching the sorted dates with the date in the service_name array
             for(int i = (20-items); i<20; ++i)
             {
                 //System.out.println(dateofservice[i]);
@@ -337,6 +350,8 @@ public class Manager
                 }
                 System.out.println();
             }
+            
+            //go through the sorted services and write them to the file
             for(int i = 0; i<items; ++i)
             {
                 System.out.println("Inserting into file: " + sorted_date[i]);
@@ -366,8 +381,16 @@ public class Manager
         return recorded_time;
     }
 
-    public void view_report(String member_id, String date)
+    public void view_report()
     {
+        System.out.println("What is the member_id for this report?:");
+        Scanner a_scan = new Scanner(System.in);
+        String member_id = a_scan.nextLine();
+
+
+        System.out.println("What is the date for this report?(MM-DD-YYYY):");
+        String date = a_scan.nextLine();
+
         String file_name = this.sql_api.getFName(member_id) + this.sql_api.getLName(member_id) + date + ".txt";
         System.out.println("Contents of: " + file_name);
         try
@@ -386,4 +409,158 @@ public class Manager
             System.out.println("Unable to read file: "+ file_name);
         }
     }
+
+    //Add/Update/Delete Providers////////////////////////////////////////////////////////////:
+    private String updateProviderID(String provider_id) {
+        Scanner input = new Scanner(System.in);
+        String temp = this.sql_api.getProviderID(provider_id);
+
+        if (!temp.equals("1") && !temp.equals("-1")) {
+            System.out.print("Would you like to update the provider ID " + temp + "? (y/n): ");
+            if (user_input()) {
+                System.out.print("Please enter a new 9 digit ID: ");
+                temp = input.nextLine();
+                if (String.valueOf(temp).length() < 9) {
+                    Random random = new Random();
+                    for (int i = String.valueOf(temp).length(); i < 9; ++i) {
+                        int k = random.nextInt(9);
+                        temp = Integer.toString(Integer.parseInt(String.valueOf(temp) + k));
+                    }
+                }
+            }
+        }
+
+        return temp;
+    }
+
+
+    private String updateProviderName(String provider_id) {
+        {
+            Scanner input = new Scanner(System.in);
+            String temp = this.sql_api.getProviderName(provider_id);
+            if (!temp.equals("1") && !temp.equals("-1")) {
+                System.out.print("Would you like to update the full name " + temp + "? (y/n): ");
+                if (user_input()) {
+                    System.out.print("Please enter the full name for the provider: ");
+                    temp = input.nextLine();
+                }
+            }
+            return temp;
+        }
+    }
+
+
+    private String updateProviderStreet(String provider_id) {
+        Scanner input = new Scanner(System.in);
+        String temp = this.sql_api.getProviderStreet(provider_id);
+        if (!temp.equals("1") && !temp.equals("-1")) {
+            System.out.print("Would you like to update the street: " + temp + "? (y/n): ");
+            if (user_input()) {
+                System.out.print("Please enter a new street location: ");
+                temp = input.nextLine();
+            }
+        }
+        return temp;
+    }
+
+
+    private String updateProviderApt(String provider_id) {
+        Scanner input = new Scanner(System.in);
+        String temp = this.sql_api.getProviderApt(provider_id);
+        if (!temp.equals("1") && !temp.equals("-1")) {
+            System.out.print("Would you like to update the Apt #: " + temp + "? (y/n): ");
+            if (user_input()) {
+                System.out.print("Please enter a new Apt#: ");
+                temp = input.nextLine();
+            }
+        }
+        return temp;
+    }
+
+    private String updateProviderState(String provider_id) {
+        Scanner input = new Scanner(System.in);
+        String temp = this.sql_api.getProviderState(provider_id);
+        if (!temp.equals("1") && !temp.equals("-1")) {
+            System.out.print("Would you like to update the state location #: " + temp + "? (y/n): ");
+            if (user_input()) {
+                System.out.print("Please enter a new state location: ");
+                temp = input.nextLine();
+            }
+        }
+        return temp;
+    }
+
+
+    private int updateProviderZip(String provider_id) {
+        Scanner input = new Scanner(System.in);
+        int temp = this.sql_api.getProviderZip(provider_id);
+        if (!(temp == 1) && !(temp == -1)) {
+            System.out.print("Would you like to update the zip-code #: " + temp + "? (y/n): ");
+            if (user_input()) {
+                System.out.print("Please enter a new zip-code: ");
+                temp = input.nextInt();
+            }
+        }
+        return temp;
+    }
+
+    private String updateProviderCity(String provider_id) {
+        Scanner input = new Scanner(System.in);
+        String temp = this.sql_api.getProviderCity(provider_id);
+        if (!temp.equals("1") && !temp.equals("-1")) {
+            System.out.print("Would you like to update the city location #: " + temp + "? (y/n): ");
+            if (user_input()) {
+                System.out.print("Please enter a new city: ");
+                temp = input.nextLine();
+            }
+        }
+        return temp;
+    }
+
+
+    public void delete_provider(String provider_id) {
+        this.sql_api.RemoveProvider(provider_id);
+    }
+
+    public void add_provider(Provider to_add) {
+        this.sql_api.AddProvider(to_add);
+    }
+
+    public void update_provider() {
+
+        System.out.println("What is the id# of the provider you are updating?:");
+        Scanner a_scan = new Scanner(System.in);
+        String provider_id = a_scan.nextLine();
+
+        System.out.println("Locating the provider to update...");
+        this.sql_api.DisplayAProvider(provider_id);
+        System.out.print("Is this the correct member? (y/n): ");
+        if (user_input()) {
+            String id = updateProviderID(provider_id);
+            System.out.println("New member ID: " + id);
+
+            String full_name = updateProviderName(provider_id);
+            System.out.println("New provider name: " + full_name);
+
+            String street = updateProviderStreet(provider_id);
+            System.out.println("New street address: " + street);
+
+            String apt = updateProviderApt(provider_id);
+            System.out.println("New apartment number: " + apt);
+
+            String state = updateProviderState(provider_id);
+            System.out.println("New state location: " + state);
+
+            int zip = updateProviderZip(provider_id);
+            System.out.println("New zip location: " + zip);
+
+            String city = updateProviderCity(provider_id);
+            System.out.println("New city location: " + city);
+
+
+            this.sql_api.updateProvider(provider_id, id, full_name, street, apt, state, zip, city);
+        }
+
+    }
 }
+
